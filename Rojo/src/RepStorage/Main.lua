@@ -18,7 +18,6 @@ local module = {}
 	
 -- Functions
 
--- Test if 2 rotated rectangles are intersecting
 function checkCollisions(object, parent)
     local objectsArray = {}
 
@@ -26,7 +25,7 @@ function checkCollisions(object, parent)
         if v:IsA("Folder") then
             checkCollisions(object, v)
         elseif v:IsA("GuiObject") then
-            if areRectanglesIntersecting(object, v) then
+            if areFramesIntersecting(object, v) then
                 table.add(objectsArray, v)
             end
         end
@@ -35,17 +34,104 @@ function checkCollisions(object, parent)
     return objectsArray
 end
 
-function areRectanglesIntersecting(object1, object2)
-	local x1, y1, w1, h1, r1 = object1.Position.X, object1.Position.Y, object1.Size.X, object1.Size.Y, object1.Rotation
-	local x2, y2, w2, h2, r2 = object2.Position.X, object2.Position.Y, object2.Size.X, object2.Size.Y, object2.Rotation
-	local dx = math.abs(x1 + w1/2 - x2 - w2/2) - (w1/2 + w2/2)
-	local dy = math.abs(y1 + h1/2 - y2 - h2/2) - (h1/2 + h2/2)
+-- Test if 2 rotated rectangles are intersecting
+function areFramesIntersecting(object1, object2)
+	local x1, y1, w1, h1 = object1.AbsolutePosition.X, object1.AbsolutePosition.Y, object1.AbsoluteSize.X, object1.AbsoluteSize.y
+	local x2, y2, w2, h2 = object2.AbsolutePosition.X, object2.AbsolutePosition.Y, object2.AbsoluteSize.X, object2.AbsoluteSize.Y
+	local dx = math.abs(x1 + w1 / 2 - x2 - w2 / 2) - (w1 / 2 + w2 / 2)
+	local dy = math.abs(y1 + h1 / 2 - y2 - h2 / 2) - (h1 / 2 + h2 / 2)
 	if dx < 0 and dy < 0 then
 		-- use separating axis theorem to test overlap
-		
+		-- TODO: possible to make a lookup table of frames to polygons, so we don't have to calculate every time
+		return intersectionCheck(createPolygon(object1), createPolygon(object2))
 	else
 		return false
 	end
+end
+
+-- Checks if the two polygons are intersecting.
+function intersectionCheck(polyA, polyB)
+	local polys = { polyA, polyB }
+	for polygon in polys do
+		for i1, v in pairs(polygon["points"]) do
+			-- get the next point to form a line
+			local i2 = (i1 + 1) % polygon["pointCount"]
+
+			local p1 = v
+			local p2 = polygon["points"][i2]
+
+			-- the normal is a line facing away from the rectangle
+			local normal = Vector2.new(p2.Y - p1.Y, p1.X - p2.X)
+
+			local minA, maxA
+			for p, v in pairs(polyA["points"]) do
+				local projected = normal.X * v.X + normal.Y * v.Y
+				if minA == nil or projected < minA then
+					minA = projected
+				end
+				if maxA == nil or projected > maxA then
+					maxA = projected
+				end
+			end
+
+			local minB, maxB
+			for p, v in pairs(polyB["points"]) do
+				local projected = normal.X * v.X + normal.Y * v.Y
+				if minB == nil or projected < minB then
+					minB = projected
+				end
+				if maxB == nil or projected > maxB then
+					maxB = projected
+				end
+			end
+
+			if maxA < minB or maxB < minA then
+				return false
+			end
+		end
+	end
+	return true
+end
+
+function createPolygon(frame)
+	local polygon = {}
+
+	local center = frame.AbsolutePosition + frame.AbsoluteSize / 2
+	
+	polygon["center"] = center
+
+	local point1 = frame.AbsolutePosition
+	local point2 = frame.AbsolutePosition + Vector2.new(frame.AbsoluteSize.X, 0)
+	local point3 = frame.AbsolutePosition + Vector2.new(0, frame.AbsoluteSize.Y)
+	local point4 = frame.AbsolutePosition + frame.AbsoluteSize
+	polygon["points"] = {rotatePoint(point1, center), rotatePoint(point2, center), rotatePoint(point3, center), rotatePoint(point4, center)}
+	polygon["pointCount"] = 4
+	
+	return polygon
+end
+
+function rotatePoint(point, center, angle)
+  local px = point.X
+  local py = point.Y
+  
+  local cx = center.X
+  local cy = center.Y
+
+  local s = math.sin(angle)
+  local c = math.cos(angle)
+
+  -- translate point back to origin:
+  px -= cx
+  py -= cy
+
+  -- rotate point
+  local xnew = px * c - py * s
+  local ynew = px * s + py * c
+
+  -- translate point back:
+  px = xnew + cx
+  py = ynew + cy
+  return Vector2.new(px, py)
 end
 
 function hitboxCheck()
