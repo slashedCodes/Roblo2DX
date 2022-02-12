@@ -12,5 +12,4 @@ Roblo2DX Makes it easier for you and others to develop 2D games with Roblox's GU
 
 # Usage
 
-Import the Rojo project above in your Roblox game.
-Enable loadstrings in ServerScriptService and you're done.
+Import the Rojo project above in your Roblox game, and you're set.
