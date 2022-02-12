@@ -1,8 +1,5 @@
 -- Main [ Alexfeed1990 - 2022 ] --
 
-
-
-
 -- Variables
 
 local players = game.Players
@@ -10,7 +7,6 @@ local localPlayer = game.Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
 local mainGui = playerGui:WaitForChild("Roblo2DX")
 local InsertService = game:GetService("InsertService")
-
 
 -- Modules And Functions
 
