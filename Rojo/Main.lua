@@ -2,6 +2,8 @@
 
 -- Variables
 
+--github fucks
+
 local players = game.Players
 local localPlayer = game.Players.localPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
