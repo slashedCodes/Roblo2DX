@@ -42,6 +42,44 @@ function Flip(fp)
 	fp.e.outEdge2 = temp
 end
 
+function ClipSegmentToLine(vOut, vIn, normal, offset, clipEdge)
+	-- Start with no output points
+	local numOut = 0;
+
+	-- Calculate the distance of end points to the line
+	local distance0 = (maths.Dot(normal, vIn[0].v) - offset);
+	local distance1 = (maths.Dot(normal, vIn[1].v) - offset);
+
+	-- If the points are behind the plane
+	if (distance0 <= 0.0) then 
+		vOut[numOut] = vIn[0];
+		numOut += 1
+	end
+	if (distance1 <= 0.0) then 
+		vOut[numOut] = vIn[1];
+		numOut += 1;
+	end
+
+	-- If the points are on different sides of the plane
+	if (distance0 * distance1 < 0.0) then
+		-- Find intersection point of edge and plane
+		local interp = distance0 / (distance0 - distance1);
+		vOut[numOut].v = vIn[0].v + interp * (vIn[1].v - vIn[0].v);
+		if (distance0 > 0.0) then
+			vOut[numOut].fp = vIn[0].fp;
+			vOut[numOut].fp.e.inEdge1 = clipEdge;
+			vOut[numOut].fp.e.inEdge2 = 0; -- NO_EDGE
+		else
+			vOut[numOut].fp = vIn[1].fp;
+			vOut[numOut].fp.e.outEdge1 = clipEdge;
+			vOut[numOut].fp.e.outEdge2 = 0; -- NO_EDGE
+		end
+		numOut += 1;
+	end
+
+	return numOut;
+end
+
 function ComputeIncidentEdge(c, h, pos, Rot, normal)
 	-- The normal is from the reference box. Convert it
 	-- to the incident boxe's frame and flip sign.
@@ -51,44 +89,44 @@ function ComputeIncidentEdge(c, h, pos, Rot, normal)
 
 	if (nAbs.x > nAbs.y) then
 		if (math.sign(n.x) > 0.0) then
-			c[0].v.Set(h.x, -h.y);
-			c[0].fp.e.inEdge2 = 3;
+			c[0].v = maths.Vec2:new(h.x, -h.y);
+			c[0].fp.e.inEdge2 = 3; -- EDGE3
 			c[0].fp.e.outEdge2 = 4;
 
-			c[1].v.Set(h.x, h.y);
+			c[1].v = maths.Vec2:new(h.x, h.y);
 			c[1].fp.e.inEdge2 = 4;
 			c[1].fp.e.outEdge2 = 1;
 		else
-			c[0].v.Set(-h.x, h.y);
+			c[0].v = maths.Vec2:new(-h.x, h.y);
 			c[0].fp.e.inEdge2 = 1;
 			c[0].fp.e.outEdge2 = 2;
 
-			c[1].v.Set(-h.x, -h.y);
+			c[1].v = maths.Vec2:new(-h.x, -h.y);
 			c[1].fp.e.inEdge2 = 2;
 			c[1].fp.e.outEdge2 = 3;
 		end
 	else
 		if (math.sign(n.y) > 0.0) then
-			c[0].v.Set(h.x, h.y);
+			c[0].v = maths.Vec2:new(h.x, h.y);
 			c[0].fp.e.inEdge2 = 4;
 			c[0].fp.e.outEdge2 = 1;
 
-			c[1].v.Set(-h.x, h.y);
+			c[1].v = maths.Vec2:new(-h.x, h.y);
 			c[1].fp.e.inEdge2 = 1;
 			c[1].fp.e.outEdge2 = 2;
 		else
-			c[0].v.Set(-h.x, -h.y);
+			c[0].v = maths.Vec2:new(-h.x, -h.y);
 			c[0].fp.e.inEdge2 = 2;
 			c[0].fp.e.outEdge2 = 3;
 
-			c[1].v.Set(h.x, -h.y);
+			c[1].v = maths.Vec2:new(h.x, -h.y);
 			c[1].fp.e.inEdge2 = 3;
 			c[1].fp.e.outEdge2 = 4;
 		end
 	end
 
-	c[0].v = pos + Rot * c[0].v;
-	c[1].v = pos + Rot * c[1].v;
+	c[0].v = maths.AddVV(pos + maths.MulMV(Rot, c[0].v));
+	c[1].v = maths.AddVV(pos + maths.MulMV(Rot, c[1].v));
 end
 
 function Collide(contacts, bodyA, bodyB)
@@ -175,7 +213,7 @@ function Collide(contacts, bodyA, bodyB)
 
 	-- Setup clipping plane data based on the separating axis
 	local frontNormal, sideNormal; -- vec2
-	local incidentEdge = {ClipVertex:new(), ClipVertex:new()}; -- ClipVertex[2]
+	local incidentEdge = {[0] = ClipVertex:new(), ClipVertex:new()}; -- ClipVertex[2]
 	local front, negSide, posSide; -- float
 	local negEdge, posEdge; -- char
 
@@ -187,7 +225,7 @@ function Collide(contacts, bodyA, bodyB)
 			local side = maths.Dot(posA, sideNormal); -- float
 			negSide = -side + hA.y;
 			posSide =  side + hA.y;
-			negEdge = 3;
+			negEdge = 3; -- EDGE3
 			posEdge = 1;
 			ComputeIncidentEdge(incidentEdge, hB, posB, RotB, frontNormal);
   elseif axis == Axis.FACE_A_Y then
@@ -226,8 +264,8 @@ function Collide(contacts, bodyA, bodyB)
 
 	-- clip other face with 5 box planes (1 face plane, 4 edge planes)
 
-	local clipPoints1 = {ClipVertex:new(), ClipVertex:new()}; -- ClipVertex[2]
-	local clipPoints2 = {ClipVertex:new(), ClipVertex:new()};
+	local clipPoints1 = {[0] = ClipVertex:new(), ClipVertex:new()}; -- ClipVertex[2]
+	local clipPoints2 = {[0] = ClipVertex:new(), ClipVertex:new()};
 	local np; -- int
 
 	-- Clip to box side 1
