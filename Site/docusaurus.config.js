@@ -8,7 +8,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'Roblo2DX',
   tagline: 'A 2D "Game Engine" for Roblox Studio.',
-  url: '',
+  url: 'gay.com',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',

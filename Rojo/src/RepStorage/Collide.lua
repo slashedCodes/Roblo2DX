@@ -7,10 +7,89 @@ Axis = {
   FACE_B_Y=3
 }
 
-ClipVertex = {
-  v = maths.Vec2:new(),
-  --fp = 
+FeaturePair =
+{
+	e = {inEdge1 = "", outEdge1 = "", inEdge2 = "", outEdge2 = ""},
+	value = 0
 }
+	
+function FeaturePair:new()
+  local o = {}
+  setmetatable(o, self)
+  self.__index = self
+  return o
+end
+
+ClipVertex = {
+  v = maths.Vec2:new(0, 0),
+  fp = FeaturePair:new()
+}
+
+function ClipVertex:new()
+	local o = {}
+	setmetatable(o, self)
+	self.__index = self
+	return o
+end
+
+function Flip(fp)
+	local temp = fp.e.inEdge1
+	fp.e.inEdge1 = fp.e.inEdge2
+	fp.e.inEdge2 = temp
+	
+	temp = fp.e.outEdge1
+	fp.e.outEdge1 = fp.e.outEdge2
+	fp.e.outEdge2 = temp
+end
+
+function ComputeIncidentEdge(c, h, pos, Rot, normal)
+	-- The normal is from the reference box. Convert it
+	-- to the incident boxe's frame and flip sign.
+	local RotT = Rot:Transpose();
+	local n = maths.MulMV(RotT, normal):neg() -- vec2
+	local nAbs = n:Abs();
+
+	if (nAbs.x > nAbs.y) then
+		if (math.sign(n.x) > 0.0) then
+			c[0].v.Set(h.x, -h.y);
+			c[0].fp.e.inEdge2 = 3;
+			c[0].fp.e.outEdge2 = 4;
+
+			c[1].v.Set(h.x, h.y);
+			c[1].fp.e.inEdge2 = 4;
+			c[1].fp.e.outEdge2 = 1;
+		else
+			c[0].v.Set(-h.x, h.y);
+			c[0].fp.e.inEdge2 = 1;
+			c[0].fp.e.outEdge2 = 2;
+
+			c[1].v.Set(-h.x, -h.y);
+			c[1].fp.e.inEdge2 = 2;
+			c[1].fp.e.outEdge2 = 3;
+		end
+	else
+		if (math.sign(n.y) > 0.0) then
+			c[0].v.Set(h.x, h.y);
+			c[0].fp.e.inEdge2 = 4;
+			c[0].fp.e.outEdge2 = 1;
+
+			c[1].v.Set(-h.x, h.y);
+			c[1].fp.e.inEdge2 = 1;
+			c[1].fp.e.outEdge2 = 2;
+		else
+			c[0].v.Set(-h.x, -h.y);
+			c[0].fp.e.inEdge2 = 2;
+			c[0].fp.e.outEdge2 = 3;
+
+			c[1].v.Set(h.x, -h.y);
+			c[1].fp.e.inEdge2 = 3;
+			c[1].fp.e.outEdge2 = 4;
+		end
+	end
+
+	c[0].v = pos + Rot * c[0].v;
+	c[1].v = pos + Rot * c[1].v;
+end
 
 function Collide(contacts, bodyA, bodyB)
 	-- Setup
@@ -96,7 +175,7 @@ function Collide(contacts, bodyA, bodyB)
 
 	-- Setup clipping plane data based on the separating axis
 	local frontNormal, sideNormal; -- vec2
-	--ClipVertex incidentEdge[2]; this is scary shit, basically in c++ its a struct with a union and we dont have that in lua
+	local incidentEdge = {ClipVertex:new(), ClipVertex:new()}; -- ClipVertex[2]
 	local front, negSide, posSide; -- float
 	local negEdge, posEdge; -- char
 
@@ -105,57 +184,58 @@ function Collide(contacts, bodyA, bodyB)
 			frontNormal = normal;
 			front = maths.Dot(posA, frontNormal) + hA.x; -- float
 			sideNormal = RotA.col2;
-			local side = maths.Dot(posA, sideNormal);
+			local side = maths.Dot(posA, sideNormal); -- float
 			negSide = -side + hA.y;
 			posSide =  side + hA.y;
-			negEdge = EDGE3;
-			posEdge = EDGE1;
+			negEdge = 3;
+			posEdge = 1;
 			ComputeIncidentEdge(incidentEdge, hB, posB, RotB, frontNormal);
   elseif axis == Axis.FACE_A_Y then
 
 			frontNormal = normal;
-			front = Dot(posA, frontNormal) + hA.y;
+			front = maths.Dot(posA, frontNormal) + hA.y;
 			sideNormal = RotA.col1;
-			float side = Dot(posA, sideNormal);
+			local side = maths.Dot(posA, sideNormal); -- float
 			negSide = -side + hA.x;
 			posSide =  side + hA.x;
-			negEdge = EDGE2;
-			posEdge = EDGE4;
+			negEdge = 2;
+			posEdge = 4;
 			ComputeIncidentEdge(incidentEdge, hB, posB, RotB, frontNormal);
 	elseif axis == Axis.FACE_B_X then
 
 			frontNormal = -normal;
-			front = Dot(posB, frontNormal) + hB.x;
+			front = maths.Dot(posB, frontNormal) + hB.x;
 			sideNormal = RotB.col2;
-			float side = Dot(posB, sideNormal);
+			local side = maths.Dot(posB, sideNormal); -- float
 			negSide = -side + hB.y;
 			posSide =  side + hB.y;
-			negEdge = EDGE3;
-			posEdge = EDGE1;
+			negEdge = 3;
+			posEdge = 1;
 			ComputeIncidentEdge(incidentEdge, hA, posA, RotA, frontNormal);
   elseif axis == Axis.FACE_B_Y then
 			frontNormal = -normal;
-			front = Dot(posB, frontNormal) + hB.y;
+			front = maths.Dot(posB, frontNormal) + hB.y;
 			sideNormal = RotB.col1;
-			float side = Dot(posB, sideNormal);
+			local side = maths.Dot(posB, sideNormal); -- float
 			negSide = -side + hB.x;
 			posSide =  side + hB.x;
-			negEdge = EDGE2;
-			posEdge = EDGE4;
+			negEdge = 2;
+			posEdge = 4;
 			ComputeIncidentEdge(incidentEdge, hA, posA, RotA, frontNormal);
 	end
 
 	-- clip other face with 5 box planes (1 face plane, 4 edge planes)
 
-	ClipVertex clipPoints1[2];
-	ClipVertex clipPoints2[2];
-	int np;
+	local clipPoints1 = {ClipVertex:new(), ClipVertex:new()}; -- ClipVertex[2]
+	local clipPoints2 = {ClipVertex:new(), ClipVertex:new()};
+	local np; -- int
 
-	// Clip to box side 1
+	-- Clip to box side 1
 	np = ClipSegmentToLine(clipPoints1, incidentEdge, -sideNormal, negSide, negEdge);
 
-	if (np < 2)
+	if (np < 2) then
 		return 0;
+  end
 
 	-- Clip to negative box side 1
 	np = ClipSegmentToLine(clipPoints2, clipPoints1,  sideNormal, posSide, posEdge)
@@ -168,8 +248,8 @@ function Collide(contacts, bodyA, bodyB)
 	-- Due to roundoff, it is possible that clipping removes all points.
 
 	local numContacts = 0;
-	for (int i = 0; i < 2; ++i) do
-		local separation = Dot(frontNormal, clipPoints2[i].v) - front;
+	for i=0,2 do
+		local separation = maths.Dot(frontNormal, clipPoints2[i].v) - front;
 
 		if (separation <= 0) then
 			contacts[numContacts].separation = separation;
@@ -177,7 +257,7 @@ function Collide(contacts, bodyA, bodyB)
 			-- slide contact point onto reference face (easy to cull)
 			contacts[numContacts].position = clipPoints2[i].v - separation * frontNormal
 			contacts[numContacts].feature = clipPoints2[i].fp
-			if (axis == FACE_B_X or axis == FACE_B_Y) then
+			if (axis == Axis.FACE_B_X or axis == Axis.FACE_B_Y) then
 				Flip(contacts[numContacts].feature)
       end
 			numContacts += 1
