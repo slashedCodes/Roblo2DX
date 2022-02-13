@@ -17,4 +17,4 @@ local rec1 = module.drawRectangle(200, 200, 500, 300, "ExampleRectangle", mainGu
 local rec2 = module.drawText(200, 150, 400, 30, "ExampleText", mainGui, textStyle)
 module.rotateObject(rec2, 90)
 -- try this to see debug infos
-print(module.areFramesIntersecting(rec1,rec2)) 
+print(module.areObjectsIntersecting(rec1,rec2)) 

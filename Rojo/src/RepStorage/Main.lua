@@ -21,7 +21,7 @@ function checkCollisions(object, parent)
         if v:IsA("Folder") then
             checkCollisions(object, v)
         elseif v:IsA("GuiObject") then
-            if module.areFramesIntersecting(object, v) then
+            if module.areObjectsIntersecting(object, v) then
                 table.add(objectsArray, v)
             end
         end
@@ -31,18 +31,12 @@ function checkCollisions(object, parent)
 end
 
 -- Test if 2 rotated rectangles are intersecting
-function module.areFramesIntersecting(object1, object2)
-	local x1, y1, w1, h1 = object1.AbsolutePosition.X, object1.AbsolutePosition.Y, object1.AbsoluteSize.X, object1.AbsoluteSize.y
-	local x2, y2, w2, h2 = object2.AbsolutePosition.X, object2.AbsolutePosition.Y, object2.AbsoluteSize.X, object2.AbsoluteSize.Y
-	local dx = math.abs(x1 + w1 / 2 - x2 - w2 / 2) - (w1 / 2 + w2 / 2)
-	local dy = math.abs(y1 + h1 / 2 - y2 - h2 / 2) - (h1 / 2 + h2 / 2)
-	if dx < 0 and dy < 0 then
-		-- TODO: possible to make a lookup table of frames to polygons, so we don't have to calculate every time
-		print("running complex collide check")
-		return intersectionCheck(createPolygon(object1), createPolygon(object2))
-	else
-		return intersectionCheck(createPolygon(object1), createPolygon(object2))
-	end
+function module.areObjectsIntersecting(object1, object2)
+	-- TODO: check if the objects are even close to intersecting
+
+	-- TODO: possible to make a lookup table of frames to polygons, so we don't have to calculate every time
+	print("running complex collide check")
+	return intersectionCheck(createPolygon(object1), createPolygon(object2))
 end
 
 -- Checks if the two polygons are intersecting.
@@ -268,6 +262,15 @@ function module.MoveObjectToCollisions(object, X, Y)
 
         local collisionArray = checkCollisions(object)
         print(collisionArray)
+
+        local revX = -X
+        local revY = -Y
+
+        if #collisionArray > 0 then
+            print("Object is colliding with other objects.")
+            print(collisionArray)
+        end
+
         -- move object away from the objects that collided with it ba ba bldb ala 
     end
 end
