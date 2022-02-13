@@ -7,6 +7,11 @@ Vec2 = {
   y = 0
 }
 
+function Vec2:Set(x, y)
+  self.x = x
+  self.y = y
+end
+
 function Vec2:neg()
   return Vec2:new(-self.x, -self.y)
 end
