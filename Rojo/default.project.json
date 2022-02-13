@@ -13,6 +13,15 @@
       "Roblo2DX": {
         "$className": "ScreenGui"
       }
+    },
+
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "Roblo2DX": {
+          "$className": "Folder",
+          "$path": "src/StarterPlayerScripts"
+        }
+      }
     }
   }
 }

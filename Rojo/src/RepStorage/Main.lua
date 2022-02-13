@@ -17,7 +17,7 @@ local module = {}
 function checkCollisions(object, parent)
     local objectsArray = {}
 
-    for i, v in pairs(mainGui:GetChildren()) do
+    for i, v in pairs(parent:GetChildren()) do
         if v:IsA("Folder") then
             checkCollisions(object, v)
         elseif v:IsA("GuiObject") then
@@ -146,10 +146,9 @@ end
 
 function module.drawRectangle(posX, posY, sizeX, sizeY, backgroundCol, backgroundTransparency, borderColor, borderSize, name, parent)
 	
-	for i, v in pairs(parent:GetChildren()) do
-		if v.Name == name then
-			warn("An object with the same name already exists!")
-		end
+	if parent:WaitForChild(name) ~= nil then
+		warn("An object with the same name already exists!")
+		return
 	end
 	
     local newFrame = Instance.new("Frame", parent)
@@ -165,10 +164,9 @@ end
 
 function module.drawSprite(posX, posY, sizeX, sizeY, spriteId, spriteTransparency, borderColor, borderSize, name, parent)
 	
-	for i, v in pairs(parent:GetChildren()) do
-		if v.Name == name then
-			warn("An object with the same name already exists!")
-		end
+	if parent:WaitForChild(name) ~= nil then
+		warn("An object with the same name already exists!")
+		return
 	end
 	
     local newImg = Instance.new("ImageLabel", mainGui)
@@ -180,6 +178,26 @@ function module.drawSprite(posX, posY, sizeX, sizeY, spriteId, spriteTransparenc
     newImg.ImageTransparency = spriteTransparency
     newImg.BorderSizePixel = borderSize
 	
+end
+
+function module.drawText(posX, posY, sizeX, sizeY, backgroundCol, backgroundTransparency, borderColor, borderSize, text, textTransparency, textColor, name, parent)
+	
+	if parent:WaitForChild(name) ~= nil then
+		warn("An object with the same name already exists!")
+		return
+	end
+	
+    local newText = Instance.new("TextLabel", parent)
+    newText.Name = name
+    newText.Position = UDim2.new(posX, 0, posY, 0)
+    newText.Size = UDim2.new(sizeX, 0, sizeY, 0)
+    newText.BackgroundColor3 = backgroundCol
+    newText.BorderColor3 = borderColor
+    newText.BackgroundTransparency = backgroundTransparency
+    newText.BorderSizePixel = borderSize
+	newText.TextColor3 = textColor
+    newText.Text = text
+    newText.TextTransparency = textTransparency
 end
 
 function rotateObject(object, rotation)
