@@ -102,8 +102,8 @@ function createPolygon(frame)
 	
 	polygon["center"] = center
 	polygon["baseElement"] = frame
-	local point1 = frame.AbsolutePosition
-	local point2 = frame.AbsolutePosition + Vector2.new(frame.AbsoluteSize.X, 0)
+	local point1 = frame.AbsolutePosition + Vector2.new(frame.AbsoluteSize.X, 0)
+	local point2 = frame.AbsolutePosition
 	local point3 = frame.AbsolutePosition + Vector2.new(0, frame.AbsoluteSize.Y)
 	local point4 = frame.AbsolutePosition + frame.AbsoluteSize
 	polygon["points"] = {rotatePoint(point1, center, frame.Rotation), rotatePoint(point2, center, frame.Rotation), rotatePoint(point3, center, frame.Rotation), rotatePoint(point4, center, frame.Rotation)}

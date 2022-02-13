@@ -8,4 +8,4 @@ Just pointing something out that's obvious might help!
 Take note of these:
   - Please make sure someone didn't already point that thing out. Scour the issues/pull requests page.
   - Even if it's a serious bug or just a tiny suggestion, please label it in the title.
-
+  - And please, be serious about it.
