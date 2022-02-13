@@ -21,7 +21,7 @@ function checkCollisions(object, parent)
         if v:IsA("Folder") then
             checkCollisions(object, v)
         elseif v:IsA("GuiObject") then
-            if areFramesIntersecting(object, v) then
+            if module.areFramesIntersecting(object, v) then
                 table.add(objectsArray, v)
             end
         end
@@ -31,31 +31,34 @@ function checkCollisions(object, parent)
 end
 
 -- Test if 2 rotated rectangles are intersecting
-function areFramesIntersecting(object1, object2)
+function module.areFramesIntersecting(object1, object2)
 	local x1, y1, w1, h1 = object1.AbsolutePosition.X, object1.AbsolutePosition.Y, object1.AbsoluteSize.X, object1.AbsoluteSize.y
 	local x2, y2, w2, h2 = object2.AbsolutePosition.X, object2.AbsolutePosition.Y, object2.AbsoluteSize.X, object2.AbsoluteSize.Y
 	local dx = math.abs(x1 + w1 / 2 - x2 - w2 / 2) - (w1 / 2 + w2 / 2)
 	local dy = math.abs(y1 + h1 / 2 - y2 - h2 / 2) - (h1 / 2 + h2 / 2)
 	if dx < 0 and dy < 0 then
 		-- TODO: possible to make a lookup table of frames to polygons, so we don't have to calculate every time
+		print("running complex collide check")
 		return intersectionCheck(createPolygon(object1), createPolygon(object2))
 	else
-		return false
+		return intersectionCheck(createPolygon(object1), createPolygon(object2))
 	end
 end
 
 -- Checks if the two polygons are intersecting.
 function intersectionCheck(polyA, polyB)
 	local polys = { polyA, polyB }
-	for polygon in polys do
+
+	for _,polygon in ipairs(polys) do
 		for i1, _ in pairs(polygon["points"]) do
 			-- get the next point to form a line
-			local i2 = (i1 + 1) % polygon["pointCount"]
+
+			local i2 = i1 % polygon["pointCount"] + 1
 
 			local p1 = polygon["points"][i1]
 			local p2 = polygon["points"][i2]
-
-			-- the normal is a line facing away from the rectangle
+			
+			-- the nomral is a vector perpendicular to the line
 			local normal = Vector2.new(p2.Y - p1.Y, p1.X - p2.X)
 
 			-- this is the separating axis theorem
@@ -189,6 +192,7 @@ end
 function module.drawRectangle(posX, posY, sizeX, sizeY, name, parent, style)
 	local newFrame = Instance.new("Frame", parent)
 	fillObject(newFrame, posX, posY, sizeX, sizeY, name, style)
+	return newFrame
 end
 
 function module.drawSprite(posX, posY, sizeX, sizeY, name, parent, style)
@@ -197,6 +201,7 @@ function module.drawSprite(posX, posY, sizeX, sizeY, name, parent, style)
 	newImg.ImageColor3 = style["spriteColor"]
 	newImg.ImageTransparency = style["spriteTransparency"]
 	newImg.Image = "rbxthumb://type=Asset&id=".. style["spriteID"].. "&w=420&h=420"
+	return newImg
 end
 
 function module.drawText(posX, posY, sizeX, sizeY, name, parent, style)
@@ -206,9 +211,10 @@ function module.drawText(posX, posY, sizeX, sizeY, name, parent, style)
 	newText.TextTransparency = style["textTransparency"]
 	-- this is one case where an extra argument wouldn't hurt in my opinion
 	newText.Text = style["text"]
+	return newText
 end
 
-function rotateObject(object, rotation)
+function module.rotateObject(object, rotation)
 	if object:isA("GuiObject") then
         object.Rotation = rotation
     end
