@@ -2,6 +2,12 @@
 
 -- Variables
 
+_G.arbiter = require(script.Parent.box2dlite.Arbiter)
+_G.body = require(script.Parent.box2dlite.Body)
+_G.collide = require(script.Parent.box2dlite.Collide)
+_G.maths = require(script.Parent.box2dlite.Math)
+_G.world = require(script.Parent.box2dlite.World)
+
 local players = game.Players
 local localPlayer = game.Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")

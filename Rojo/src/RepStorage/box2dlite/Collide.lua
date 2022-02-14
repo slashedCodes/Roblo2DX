@@ -1,10 +1,13 @@
 --[[ 
 	Code ported from box2d-lite (https://github.com/erincatto/box2d-lite)
 	Ported by art0007i
- ]]--
 
 local maths = require(script.Parent.Math)
 local arbiter = require(script.Parent.Arbiter)
+]]--
+
+local maths = _G.maths
+local arbiter = _G.maths
 
 local module = {}
 Axis = {
