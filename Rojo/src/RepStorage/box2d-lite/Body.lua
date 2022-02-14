@@ -1,4 +1,9 @@
-local maths = require(game.ReplicatedStorage.Roblo2DX.Math)
+--[[ 
+	Code ported from box2d-lite (https://github.com/erincatto/box2d-lite)
+  Ported by art0007i
+ ]]--
+
+local maths = require(script.Parent.Math)
 
 bodyCount = 0
 

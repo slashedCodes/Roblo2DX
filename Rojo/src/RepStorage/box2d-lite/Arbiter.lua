@@ -1,5 +1,10 @@
-local maths = require(game.ReplicatedStorage.Roblo2DX.Math)
-local collide = require(game.ReplicatedStorage.Roblo2DX.Collide)
+--[[ 
+	Code ported from box2d-lite (https://github.com/erincatto/box2d-lite)
+	Ported by art0007i
+ ]]--
+
+local maths = require(script.Parent.Math)
+local collide = require(script.Parent.Collide)
 
 local module = {}
 
