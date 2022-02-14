@@ -5,7 +5,7 @@
 
 local maths = require(script.Parent.Math)
 local collide = require(script.Parent.Collide)
-
+-- TODO: add world global variable or something
 local module = {}
 
 FeaturePair = {
@@ -53,6 +53,10 @@ Arbiter = {
   friction = 0
 }
 
+function Arbiter:Equals(other)
+	return self.body1.globalIndex == other.body1.globalIndex and self.body2.globalIndex == other.body2.globalIndex
+end
+
 function Arbiter:new(b1, b2)
   local o = {}
   setmetatable(o, self)
@@ -87,7 +91,7 @@ function Arbiter:Update(newContacts, numNewContacts)
 			local c = mergedContacts[i]; --Contact*
 			local cOld = self.contacts[k]; -- Contact*
 			c = cNew;
-			if (World.warmStarting) then
+			if (_G.warmStarting) then
 				c.Pn = cOld.Pn;
 				c.Pt = cOld.Pt;
 				c.Pnb = cOld.Pnb;
@@ -111,7 +115,7 @@ end
 function Arbiter:PreStep(inv_dt)
 	local k_allowedPenetration = 0.01;
 	local k_biasFactor 
-  if World.positionCorrection then
+  if _G.positionCorrection then
     k_biasFactor = 0.2
   else
     k_biasFactor = 0.0
@@ -139,7 +143,7 @@ function Arbiter:PreStep(inv_dt)
 
 		c.bias = -k_biasFactor * inv_dt * math.min(0.0, c.separation + k_allowedPenetration);
 
-		if (World.accumulateImpulses) then
+		if (_G.accumulateImpulses) then
 			-- Apply normal + friction impulse
 			local P = maths.AddVV(maths.MulFV(c.Pn, c.normal), maths.MulFV(c.Pt, tangent)); -- Vec2
 
@@ -169,7 +173,7 @@ function Arbiter:ApplyImpulse()
 
 		local dPn = c.massNormal * (-vn + c.bias); -- float
 
-		if (World.accumulateImpulses) then
+		if (_G.accumulateImpulses) then
 			-- Clamp the accumulated impulse
 			local Pn0 = c.Pn; -- float
 			c.Pn = math.max(Pn0 + dPn, 0.0);
@@ -194,7 +198,7 @@ function Arbiter:ApplyImpulse()
 		local vt = maths.Dot(dv, tangent);
 		local dPt = c.massTangent * (-vt);
 
-		if (World.accumulateImpulses) then
+		if (_G.accumulateImpulses) then
 			-- Compute friction impulse
 			local maxPt = self.friction * c.Pn;
 

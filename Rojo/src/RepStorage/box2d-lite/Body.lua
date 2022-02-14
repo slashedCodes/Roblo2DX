@@ -5,7 +5,7 @@
 
 local maths = require(script.Parent.Math)
 
-bodyCount = 0
+_G.bodyCount = 0
 
 local module = {}
 Body = {
@@ -27,7 +27,6 @@ Body = {
   invI = 0,
 
   globalIndex = 0,
-  -- TODO: THIS COULD CAUSE ERRORS
 }
 
 function Body:AddForce(f)
@@ -63,8 +62,8 @@ function Body:new()
   local o = {}
   setmetatable(o, self)
   self.__index = self
-  o.globalIndex = bodyCount
-  bodyCount += 1
+  o.globalIndex = _G.bodyCount
+  _G.bodyCount += 1
   return o
 end
 
