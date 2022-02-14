@@ -8,7 +8,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'Roblo2DX',
   tagline: 'A 2D "Game Engine" for Roblox Studio.',
-  url: 'gay.com',
+  url: 'alexfeed1990.github.io/Roblo2DX',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -43,9 +43,9 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       navbar: {
-        title: 'My Site',
+        title: 'Roblo2DX',
         logo: {
-          alt: 'My Site Logo',
+          alt: 'Roblo2DX Logo',
           src: 'img/logo.svg',
         },
         items: [
