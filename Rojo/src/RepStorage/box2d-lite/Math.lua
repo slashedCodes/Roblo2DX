@@ -1,4 +1,7 @@
--- Code taken from https://github.com/erincatto/box2d-lite --
+--[[ 
+	Code ported from box2d-lite (https://github.com/erincatto/box2d-lite)
+  Ported by art0007i
+ ]]--
 
 local module = {}
 

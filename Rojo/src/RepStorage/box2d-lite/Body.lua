@@ -1,6 +1,11 @@
-local maths = require(game.ReplicatedStorage.Roblo2DX.Math)
+--[[ 
+	Code ported from box2d-lite (https://github.com/erincatto/box2d-lite)
+  Ported by art0007i
+ ]]--
 
-bodyCount = 0
+local maths = require(script.Parent.Math)
+
+_G.bodyCount = 0
 
 local module = {}
 Body = {
@@ -22,7 +27,6 @@ Body = {
   invI = 0,
 
   globalIndex = 0,
-  -- TODO: THIS COULD CAUSE ERRORS
 }
 
 function Body:AddForce(f)
@@ -58,8 +62,8 @@ function Body:new()
   local o = {}
   setmetatable(o, self)
   self.__index = self
-  o.globalIndex = bodyCount
-  bodyCount += 1
+  o.globalIndex = _G.bodyCount
+  _G.bodyCount += 1
   return o
 end
 
