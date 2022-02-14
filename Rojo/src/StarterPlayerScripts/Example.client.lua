@@ -17,11 +17,16 @@ local textStyle = {
     text = "Hello from Roblo2DX!"
 }
 
---local rec1 = module.drawRectangle(200, 200, 500, 300, "ExampleRectangle", mainGui, rectangleStyle)
+local rec1 = module.drawRectangle(200, 200, 500, 300, "ExampleRectangle", mainGui, rectangleStyle)
 --local rec2 = module.drawText(200, 150, 400, 30, "ExampleText", mainGui, textStyle)
 --module.rotateObject(rec2, 90)
 -- try this to see debug infos
 --print(module.areObjectsIntersecting(rec1,rec2)) 
+
+
+module.CreateComponent("TestComponent", rec1)
+
+
 
 local rects = {}
 
@@ -90,5 +95,5 @@ while not stop do
 		rects[i].Size = scale;
 		rects[i].Rotation = v.rotation;
 	end
-	task.wait(0)
+	game:GetService("UserInputService").InputBegan:Wait()
 end

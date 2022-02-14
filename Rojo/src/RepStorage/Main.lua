@@ -3,15 +3,10 @@
 -- Variables
 
 _G.maths = require(script.Parent.box2dlite.Math)
-
 _G.arbiter = require(script.Parent.box2dlite.Arbiter)
-
 _G.collide = require(script.Parent.box2dlite.Collide)
-
 _G.body = require(script.Parent.box2dlite.Body)
-
 _G.world = require(script.Parent.box2dlite.World)
-
 _G.arbiter.Init()
 
 local players = game.Players
@@ -19,6 +14,11 @@ local localPlayer = game.Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
 local mainGui = playerGui:WaitForChild("Roblo2DX")
 local InsertService = game:GetService("InsertService")
+local compFolder = script.Parent.Components
+
+local components = {
+	"TestComponent"
+}
 
 -- Modules And Functions
 
@@ -192,6 +192,11 @@ function fillObject(object, posX, posY, sizeX, sizeY, name, style)
 	object.BackgroundTransparency = style["bgTransparency"]
 	object.BorderColor3 = style["borderColor"]
 	object.BorderSizePixel = style["borderSize"]
+
+	-- create components folder
+
+	local components = Instance.new("Folder", object)
+	components.Name = "Components"
 end
 
 function module.drawRectangle(posX, posY, sizeX, sizeY, name, parent, style)
@@ -284,6 +289,21 @@ function module.MoveObjectToCollisions(object, X, Y)
 
         -- move object away from the objects that collided with it ba ba bldb ala 
     end
+end
+
+function module.CreateComponent(name, object)
+	for i, v in ipairs(components) do
+		if v == name then
+			for i, v in pairs(compFolder:GetChildren()) do
+				if v:IsA("ScriptObject") and v.Name == name then
+					-- nasty nested bullshit ik
+					local componentClone = v:Clone()
+					componentClone.Parent = object.Components
+					componentClone:create() -- automatically create
+				end
+			end
+		end
+	end
 end
 
 return module
