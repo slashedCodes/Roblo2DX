@@ -1,5 +1,7 @@
 local maths = require(game.ReplicatedStorage.Roblo2DX.Math)
+local arbiter = require(game.ReplicatedStorage.Roblo2DX.Arbiter)
 
+local module = {}
 Axis = {
   FACE_A_X=0,
   FACE_A_Y=1,
@@ -7,22 +9,9 @@ Axis = {
   FACE_B_Y=3
 }
 
-FeaturePair =
-{
-	e = {inEdge1 = "", outEdge1 = "", inEdge2 = "", outEdge2 = ""},
-	value = 0
-}
-	
-function FeaturePair:new()
-  local o = {}
-  setmetatable(o, self)
-  self.__index = self
-  return o
-end
-
 ClipVertex = {
   v = maths.Vec2:new(0, 0),
-  fp = FeaturePair:new()
+  fp = arbiter.FeaturePair:new()
 }
 
 function ClipVertex:new()
@@ -286,7 +275,7 @@ function Collide(contacts, bodyA, bodyB)
 	-- Due to roundoff, it is possible that clipping removes all points.
 
 	local numContacts = 0;
-	for i=0,2 do
+	for i=0,1 do
 		local separation = maths.Dot(frontNormal, clipPoints2[i].v) - front;
 
 		if (separation <= 0) then
@@ -304,3 +293,7 @@ function Collide(contacts, bodyA, bodyB)
 
 	return numContacts;
 end
+
+module.Collide = Collide;
+
+return module;
