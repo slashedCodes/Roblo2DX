@@ -61,10 +61,6 @@ function World:BroadPhase()
 				end
 			end
 			if (newArb.numContacts > 0) then
-				print("DEBUG Coll " .. bi.globalIndex .. "  " .. bj.globalIndex)
-				print(newArb)
-				print(newArb.numContacts)
-				print(found)
 				if (found == -1) then -- Not sure if this is correct but eh im sure it's fine
 					table.insert(self.arbiters, newArb);
 				else
