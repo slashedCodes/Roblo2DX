@@ -7,25 +7,27 @@ local arbiter = require(script.Parent.Arbiter)
 ]]--
 
 local maths = _G.maths
-local arbiter = _G.maths
+local arbiter = _G.arbiter
 
 local module = {}
 Axis = {
   FACE_A_X=0,
   FACE_A_Y=1,
   FACE_B_X=2,
-  FACE_B_Y=3
+  FACE_B_Y=3,
 }
 
 ClipVertex = {
-  v = maths.Vec2:new(0, 0),
-  fp = arbiter.FeaturePair:new()
+  v = "", -- maths.Vec2:new(0, 0),
+  fp = "" -- arbiter.FeaturePair:new()
 }
 
 function ClipVertex:new()
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self
+	o.v = maths.Vec2:new(0, 0)
+	o.fp = arbiter.FeaturePair:new()
 	return o
 end
 
@@ -61,7 +63,7 @@ function ClipSegmentToLine(vOut, vIn, normal, offset, clipEdge)
 	if (distance0 * distance1 < 0.0) then
 		-- Find intersection point of edge and plane
 		local interp = distance0 / (distance0 - distance1);
-		vOut[numOut].v = vIn[0].v + interp * (vIn[1].v - vIn[0].v);
+		vOut[numOut].v = maths.AddVV(vIn[0].v, maths.MulFV(interp, maths.SubVV(vIn[1].v, vIn[0].v)));
 		if (distance0 > 0.0) then
 			vOut[numOut].fp = vIn[0].fp;
 			vOut[numOut].fp.e.inEdge1 = clipEdge;
@@ -122,8 +124,8 @@ function ComputeIncidentEdge(c, h, pos, Rot, normal)
 		end
 	end
 
-	c[0].v = maths.AddVV(pos + maths.MulMV(Rot, c[0].v));
-	c[1].v = maths.AddVV(pos + maths.MulMV(Rot, c[1].v));
+	c[0].v = maths.AddVV(pos, maths.MulMV(Rot, c[0].v));
+	c[1].v = maths.AddVV(pos, maths.MulMV(Rot, c[1].v));
 end
 
 function Collide(contacts, bodyA, bodyB)
@@ -134,8 +136,8 @@ function Collide(contacts, bodyA, bodyB)
 	local posA = bodyA.position; -- vec2
 	local posB = bodyB.position;
 
-	local RotA = maths.Mat22:new(bodyA.rotation) -- mat22
-  local RotB = maths.Mat22:new(bodyB.rotation);
+	local RotA = maths.Mat22:newA(bodyA.rotation) -- mat22
+	local RotB = maths.Mat22:newA(bodyB.rotation);
 
 	local RotAT = RotA:Transpose(); -- mat22
 	local RotBT = RotB:Transpose();
@@ -155,7 +157,7 @@ function Collide(contacts, bodyA, bodyB)
   end
 
 	-- Box B faces
-	local faceB = maths.SubVV(maths.SubVV(dB:Abs(), maths.MulMV(absCT * hA)), hB); -- vec2
+	local faceB = maths.SubVV(maths.SubVV(dB:Abs(), maths.MulMV(absCT, hA)), hB); -- vec2
 	if faceB.x > 0.0 or faceB.y > 0.0 then
 		return 0;
   end
@@ -238,7 +240,7 @@ function Collide(contacts, bodyA, bodyB)
 			ComputeIncidentEdge(incidentEdge, hB, posB, RotB, frontNormal);
 	elseif axis == Axis.FACE_B_X then
 
-			frontNormal = -normal;
+			frontNormal = normal:neg();
 			front = maths.Dot(posB, frontNormal) + hB.x;
 			sideNormal = RotB.col2;
 			local side = maths.Dot(posB, sideNormal); -- float
@@ -248,7 +250,7 @@ function Collide(contacts, bodyA, bodyB)
 			posEdge = 1;
 			ComputeIncidentEdge(incidentEdge, hA, posA, RotA, frontNormal);
   elseif axis == Axis.FACE_B_Y then
-			frontNormal = -normal;
+			frontNormal = normal:neg();
 			front = maths.Dot(posB, frontNormal) + hB.y;
 			sideNormal = RotB.col1;
 			local side = maths.Dot(posB, sideNormal); -- float
@@ -266,7 +268,7 @@ function Collide(contacts, bodyA, bodyB)
 	local np; -- int
 
 	-- Clip to box side 1
-	np = ClipSegmentToLine(clipPoints1, incidentEdge, -sideNormal, negSide, negEdge);
+	np = ClipSegmentToLine(clipPoints1, incidentEdge, sideNormal:neg(), negSide, negEdge);
 
 	if (np < 2) then
 		return 0;
@@ -290,7 +292,7 @@ function Collide(contacts, bodyA, bodyB)
 			contacts[numContacts].separation = separation;
 			contacts[numContacts].normal = normal;
 			-- slide contact point onto reference face (easy to cull)
-			contacts[numContacts].position = clipPoints2[i].v - separation * frontNormal
+			contacts[numContacts].position = maths.SubVV(clipPoints2[i].v, maths.MulFV(separation, frontNormal));
 			contacts[numContacts].feature = clipPoints2[i].fp
 			if (axis == Axis.FACE_B_X or axis == Axis.FACE_B_Y) then
 				Flip(contacts[numContacts].feature)

@@ -2,11 +2,17 @@
 
 -- Variables
 
-_G.arbiter = require(script.Parent.box2dlite.Arbiter)
-_G.body = require(script.Parent.box2dlite.Body)
-_G.collide = require(script.Parent.box2dlite.Collide)
 _G.maths = require(script.Parent.box2dlite.Math)
+
+_G.arbiter = require(script.Parent.box2dlite.Arbiter)
+
+_G.collide = require(script.Parent.box2dlite.Collide)
+
+_G.body = require(script.Parent.box2dlite.Body)
+
 _G.world = require(script.Parent.box2dlite.World)
+
+_G.arbiter.Init()
 
 local players = game.Players
 local localPlayer = game.Players.LocalPlayer
@@ -169,7 +175,6 @@ function module.defaultStyle(style)
 	fill(style, "textColor", Color3.new(1, 1, 1))
 	fill(style, "textTransparency", 0)
 	fill(style, "text", "")
-	-- rainbow sprite uploaded by roblox
 	fill(style, "spriteID", 0)
 	fill(style, "spriteColor", Color3.new(1, 1, 1))
 	fill(style, "spriteTransparency", 0)

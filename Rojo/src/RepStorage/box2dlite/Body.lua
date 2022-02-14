@@ -66,6 +66,10 @@ function Body:new()
   setmetatable(o, self)
   self.__index = self
   o.globalIndex = _G.bodyCount
+  o.position = maths.Vec2:new(0, 0)
+  o.velocity = maths.Vec2:new(0, 0)
+  o.force = maths.Vec2:new(0, 0)
+  o.width = maths.Vec2:new(10, 10)
   _G.bodyCount += 1
   return o
 end

@@ -71,7 +71,7 @@ function Mat22:Invert()
   local B = Mat22:new()
   local det = a * d - b * c
   if det == 0 then
-    print("TRIED TO INVERT INVALID MATRIX")
+    warn("Tried to invert a invalid matrix.")
     return nil
   end
 
@@ -87,20 +87,22 @@ function Mat22:new()
   local o = {}
   setmetatable(o, self)
   self.__index = self
+  o.col1 = Vec2:new(0, 0)
+  o.col2 = Vec2:new(0, 0)
   return o
 end
 
-function Mat22:new(x, y)
+function Mat22:newVV(x, y)
   local o = Mat22:new()
   o.col1 = x
   o.col2 = y
   return o
 end
 
-function Mat22:new(angle)
+function Mat22:newA(angle)
   local o = Mat22:new()
-  o.col1 = {math.cos(angle), math.sin(angle)}
-  o.col2 = {-o.col1.y, o.col1.x}
+  o.col1 = Vec2:new(math.cos(angle), math.sin(angle))
+  o.col2 = Vec2:new(-o.col1.y, o.col1.x)
   --  [ c,  -s ]
   --  [ s,   c ]
   return o
@@ -144,11 +146,11 @@ function module.MulFV(s, v)
 end
 
 function module.AddMM(A, B)
-  return Mat22:new(module.AddVV(A.col1, B.col1), module.AddVV(A.col2, B.col2))
+  return Mat22:newVV(module.AddVV(A.col1, B.col1), module.AddVV(A.col2, B.col2))
 end
 
 function module.MulMM(A, B)
-  return Mat22:new(module.MulMV(A, B.col1), module.MulMV(A, B.col2));
+  return Mat22:newVV(module.MulMV(A, B.col1), module.MulMV(A, B.col2));
 end
 
 -- math.abs(a)
@@ -158,7 +160,7 @@ function Vec2:Abs()
 end
 
 function Mat22:Abs()
-  return Mat22:new(self.col1:Abs(), self.col2:Abs())
+  return Mat22:newVV(self.col1:Abs(), self.col2:Abs())
 end
 
 -- math.sign(a)

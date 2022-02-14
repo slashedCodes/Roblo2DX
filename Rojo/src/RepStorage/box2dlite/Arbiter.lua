@@ -8,10 +8,12 @@ local collide = require(script.Parent.Collide)
  ]]--
 
 local maths = _G.maths;
-local collide = _G.collide;
+collide = _G.collide;
 
 -- TODO: add world global variable or something
 local module = {}
+
+module.Init = function() collide = _G.collide end
 
 FeaturePair = {
 	e = {inEdge1 = "", outEdge1 = "", inEdge2 = "", outEdge2 = ""},
@@ -22,6 +24,7 @@ function FeaturePair:new()
   local o = {}
   setmetatable(o, self)
   self.__index = self
+	o.e = {inEdge1 = "", outEdge1 = "", inEdge2 = "", outEdge2 = ""}
   return o
 end
 
@@ -44,6 +47,11 @@ function Contact:new()
   local o = {}
   setmetatable(o, self)
   self.__index = self
+	o.position = maths.Vec2:new(0, 0)
+	o.normal = maths.Vec2:new(0, 0)
+	o.r1 = maths.Vec2:new(0, 0)
+	o.r2 = maths.Vec2:new(0, 0)
+	o.feature = FeaturePair:new()
   return o
 end
 
@@ -66,6 +74,8 @@ function Arbiter:new(b1, b2)
   local o = {}
   setmetatable(o, self)
   self.__index = self
+	o.contacts = {[0] = Contact:new(), [1] = Contact:new()}
+
   if(b1.globalIndex < b2.globalIndex) then
     o.body1 = b1
     o.body2 = b2
@@ -152,10 +162,10 @@ function Arbiter:PreStep(inv_dt)
 			-- Apply normal + friction impulse
 			local P = maths.AddVV(maths.MulFV(c.Pn, c.normal), maths.MulFV(c.Pt, tangent)); -- Vec2
 
-			self.body1.velocity -= self.body1.invMass * P;
+			self.body1.velocity:sub(maths.MulFV(self.body1.invMass, P));
 			self.body1.angularVelocity -= self.body1.invI * maths.CrossVV(r1, P);
 
-			self.body2.velocity += self.body2.invMass * P;
+			self.body2.velocity:sub(maths.MulFV(self.body2.invMass, P));
 			self.body2.angularVelocity += self.body2.invI * maths.CrossVV(r2, P);
     end
 	end
@@ -167,11 +177,11 @@ function Arbiter:ApplyImpulse()
 
 	for i = 0,self.numContacts-1 do
 		local c = self.contacts[i];
-		c.r1 = c.position - b1.position;
-		c.r2 = c.position - b2.position;
+		c.r1 = maths.SubVV(c.position, b1.position);
+		c.r2 = maths.SubVV(c.position, b2.position);
 
 		-- Relative velocity at contact
-		local dv = b2.velocity + maths.CrossFV(b2.angularVelocity, c.r2) - b1.velocity - maths.CrossFV(b1.angularVelocity, c.r1); -- Vec2
+		local dv = maths.SubVV(maths.AddVV(b2.velocity, maths.CrossFV(b2.angularVelocity, c.r2)), maths.SubVV(b1.velocity, maths.CrossFV(b1.angularVelocity, c.r1))); -- Vec2
 
 		-- Compute normal impulse
 		local vn = maths.Dot(dv, c.normal); -- float
@@ -197,11 +207,11 @@ function Arbiter:ApplyImpulse()
 		b2.angularVelocity += b2.invI * maths.CrossVV(c.r2, Pn);
 
 		-- Relative velocity at contact
-		dv = b2.velocity + maths.CrossFV(b2.angularVelocity, c.r2) - b1.velocity - maths.CrossFV(b1.angularVelocity, c.r1);
+		dv = maths.SubVV(maths.AddVV(b2.velocity, maths.CrossFV(b2.angularVelocity, c.r2)), maths.SubVV(b1.velocity, maths.CrossFV(b1.angularVelocity, c.r1))); -- Vec2
 
 		local tangent = maths.CrossVF(c.normal, 1.0); -- Vec2
 		local vt = maths.Dot(dv, tangent);
-		local dPt = c.massTangent * (-vt);
+		local dPt = c.massTangent * (-vt); -- float
 
 		if (_G.accumulateImpulses) then
 			-- Compute friction impulse
@@ -217,15 +227,16 @@ function Arbiter:ApplyImpulse()
     end
 
 		-- Apply contact impulse
-		local Pt = maths.MulFV(dPt * tangent); -- Vec2
+		local Pt = maths.MulFV(dPt, tangent); -- Vec2
 
-		b1.velocity -= b1.invMass * Pt;
+		b1.velocity:sub(maths.MulFV(b1.invMass, Pt));
 		b1.angularVelocity -= b1.invI * maths.CrossVV(c.r1, Pt);
 
-		b2.velocity += b2.invMass * Pt;
+		b2.velocity:sub(maths.MulFV(b2.invMass, Pt));
 		b2.angularVelocity += b2.invI * maths.CrossVV(c.r2, Pt);
 	end
 end
 
+module.Arbiter = Arbiter;
 
 return module

@@ -24,11 +24,11 @@ _G.accumulateImpulses = true
 _G.warmStarting = true
 _G.positionCorrection = true
 
-function World:Add(body)
+function World:AddB(body)
 	table.insert(self.bodies, body);
 end
 
-function World:Add(joint) 
+function World:AddJ(joint) 
 	table.insert(self.joints, joint);
 end
 
@@ -49,6 +49,7 @@ function World:BroadPhase()
 			if (bi.invMass == 0.0 and bj.invMass == 0.0) then
 				continue;
 			end
+
 			local newArb = arbiter.Arbiter:new(bi, bj); -- Arbiter
 
 			local found = -1;
@@ -59,8 +60,11 @@ function World:BroadPhase()
 					break;
 				end
 			end
-
 			if (newArb.numContacts > 0) then
+				print("DEBUG Coll " .. bi.globalIndex .. "  " .. bj.globalIndex)
+				print(newArb)
+				print(newArb.numContacts)
+				print(found)
 				if (found == -1) then -- Not sure if this is correct but eh im sure it's fine
 					table.insert(self.arbiters, newArb);
 				else
@@ -93,7 +97,7 @@ function World:Step(dt)
 			continue;
     end
 
-		b.velocity += dt * (self.gravity + b.invMass * b.force);
+		b.velocity:add(maths.MulFV(dt, (maths.AddVV(self.gravity, maths.MulFV(b.invMass, b.force)))));
 		b.angularVelocity += dt * b.invI * b.torque;
   end
 
@@ -105,7 +109,6 @@ function World:Step(dt)
 	for _,v in pairs(self.joints) do
 		v:PreStep(inv_dt);	
   end
-
 	-- Perform iterations
 	for i = 1,self.iterations do
 		for first,second in pairs(self.arbiters) do
@@ -121,7 +124,7 @@ function World:Step(dt)
 	for _,v in pairs(self.bodies) do
 		local b = v; -- body*
 
-		b.position += dt * b.velocity;
+		b.position:add(maths.MulFV(dt, b.velocity));
 		b.rotation += dt * b.angularVelocity;
 
 		b.force:Set(0.0, 0.0);
@@ -133,6 +136,9 @@ function World:new(gravity, iterations)
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self
+
+	-- possible accessing the variables in the class template
+	-- but usually you only have 1 world... so we probably don't care
 
 	o.gravity = gravity
 	o.iterations = iterations
