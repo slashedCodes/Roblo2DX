@@ -1,12 +1,15 @@
 --[[ 
 	Code ported from box2d-lite (https://github.com/erincatto/box2d-lite)
 	Ported by art0007i
- ]]--
-
-local module = {}
 
 local arbiter = require(script.Parent.Arbiter)
 local maths = require(script.Parent.Math)
+]]--
+
+local module = {}
+
+local arbiter = _G.arbiter
+local maths = _G.maths
 
 World = {
 	gravity = maths.Vec2:new(0, -10),

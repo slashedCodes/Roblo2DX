@@ -1,10 +1,15 @@
 --[[ 
 	Code ported from box2d-lite (https://github.com/erincatto/box2d-lite)
 	Ported by art0007i
- ]]--
 
+	
 local maths = require(script.Parent.Math)
 local collide = require(script.Parent.Collide)
+ ]]--
+
+local maths = _G.maths;
+local collide = _G.collide;
+
 -- TODO: add world global variable or something
 local module = {}
 

@@ -1,9 +1,12 @@
 --[[ 
 	Code ported from box2d-lite (https://github.com/erincatto/box2d-lite)
   Ported by art0007i
- ]]--
+
 
 local maths = require(script.Parent.Math)
+]]--
+
+local maths = _G.maths
 
 _G.bodyCount = 0
 
