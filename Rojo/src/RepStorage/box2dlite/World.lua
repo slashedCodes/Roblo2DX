@@ -22,17 +22,17 @@ _G.warmStarting = true
 _G.positionCorrection = true
 
 function World:Add(body)
-	self.bodies.push_back(body);
+	table.insert(self.bodies, body);
 end
 
 function World:Add(joint) 
-	self.joints.push_back(joint);
+	table.insert(self.joints, joint);
 end
 
 function World:Clear()
-	self.bodies.clear();
-	self.joints.clear();
-	self.arbiters.clear();
+	table.clear(self.bodies);
+	table.clear(self.joints);
+	table.clear(self.arbiters);
 end
 
 function World:BroadPhase()
@@ -125,3 +125,18 @@ function World:Step(dt)
 		b.torque = 0.0;
   end
 end
+
+function World:new(gravity, iterations)
+	local o = {}
+	setmetatable(o, self)
+	self.__index = self
+
+	o.gravity = gravity
+	o.iterations = iterations
+
+	return o;	
+end
+
+module.World = World
+
+return module;
