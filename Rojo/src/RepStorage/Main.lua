@@ -158,13 +158,21 @@ function hitboxCheck()
 	end
 end
 
--- Module functions
-
 function fill(style, name, default)
 	if style[name] == nil then
 		style[name] = default
 	end
 end
+
+function translateUnitToPx(value)
+	return value/50 -- this is incorrect, need to account for scale/zoom
+end
+
+function translatePxToUnit(value)
+	return value*50
+end
+
+-- Module functions
 
 function module.defaultStyle(style)
 	fill(style, "borderColor", Color3.new(1, 1, 1))
@@ -184,19 +192,24 @@ function fillObject(object, posX, posY, sizeX, sizeY, name, style)
 	-- ensures that provided styles are valid
 	module.defaultStyle(style)
 
+	object:SetAttribute("PosX", posX) -- 1 in unit space is 50px in real screen space.
+	object:SetAttribute("PosY", posY)
+
+	object:SetAttribute("ScaleX", sizeX)
+	object:SetAttribute("ScaleY", sizeY)
+
+	object:SetAttribute("Rotation", 0)
+
 	-- all of these are properties of GuiObject so we can set them without worrying about the object type
 	object.Name = name
-	object.Position = UDim2.new(0, posX, 0, posY)
-	object.Size = UDim2.new(0, sizeX, 0, sizeY)	
+	object.Position = UDim2.new(0, translateUnitToPx(object:GetAttribute("PosX")), 0, translateUnitToPx(object:GetAttribute("PosY")))
+	object.Size = UDim2.new(0, translateUnitToPx(object:GetAttribute("ScaleX")), 0, translateUnitToPx(object:GetAttribute("ScaleY")))	
 	object.BackgroundColor3 = style["bgColor"]
 	object.BackgroundTransparency = style["bgTransparency"]
 	object.BorderColor3 = style["borderColor"]
 	object.BorderSizePixel = style["borderSize"]
 
-	-- create components folder
 
-	local components = Instance.new("Folder", object)
-	components.Name = "Components"
 end
 
 function module.drawRectangle(posX, posY, sizeX, sizeY, name, parent, style)
@@ -268,7 +281,7 @@ end
 
 function module.MoveObjectTo(object, X, Y)
     if object:IsA("GuiObject") then
-        object.Postion = UDim2.new(X, 0, Y, 0)
+		object.Position = UDim2.new(0, translateUnitToPx(Instance:GetAttribute("PosX")), 0, translateUnitToPx(Instance:GetAttribute("PosY")))
     end
 end
 
@@ -289,21 +302,6 @@ function module.MoveObjectToCollisions(object, X, Y)
 
         -- move object away from the objects that collided with it ba ba bldb ala 
     end
-end
-
-function module.CreateComponent(name, object)
-	for i, v in ipairs(components) do
-		if v == name then
-			for i, v in pairs(compFolder:GetChildren()) do
-				if v:IsA("ScriptObject") and v.Name == name then
-					-- nasty nested bullshit ik
-					local componentClone = v:Clone()
-					componentClone.Parent = object.Components
-					componentClone:create() -- automatically create
-				end
-			end
-		end
-	end
 end
 
 return module

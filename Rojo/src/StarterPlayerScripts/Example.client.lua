@@ -24,9 +24,6 @@ local rec1 = module.drawRectangle(200, 200, 500, 300, "ExampleRectangle", mainGu
 --print(module.areObjectsIntersecting(rec1,rec2)) 
 
 
-module.CreateComponent("TestComponent", rec1)
-
-
 
 local rects = {}
 
@@ -53,8 +50,6 @@ local pan_y = 0 -- waiting on renderer
 
 local world = worl.World:new(gravity, iterations)
 
-local stop = false;
-
 math.randomseed(os.time())
 
 bodies[numBodies] = bod.Body:new()
@@ -63,7 +58,6 @@ bodies[numBodies].position:Set(600, 400)
 bodies[numBodies].friction = 20
 
 world:AddB(bodies[numBodies])
-print(tostring(bodies[0].position))
 numBodies += 1
 
 bodies[numBodies] = bod.Body:new() 
@@ -73,27 +67,62 @@ bodies[numBodies].angularVelocity = 1
 bodies[numBodies].friction = 20
 
 world:AddB(bodies[numBodies])
-print(tostring(bodies[1].position))
 numBodies += 1
 
 bodies[numBodies] = bod.Body:new()
 bodies[numBodies]:Set(maths.Vec2:new(100,100), 100)
-bodies[numBodies].position:Set(700, 120)
+bodies[numBodies].position:Set(700, 0)
 bodies[numBodies].angularVelocity = 6
 bodies[numBodies].friction = 20
 
 world:AddB(bodies[numBodies])
-print(tostring(bodies[2].position))
 numBodies += 1
 
-while not stop do
+bodies[numBodies] = bod.Body:new()
+bodies[numBodies]:Set(maths.Vec2:new(100,100), 100)
+bodies[numBodies].position:Set(690, 120)
+bodies[numBodies].angularVelocity = -8
+bodies[numBodies].friction = 20
+
+world:AddB(bodies[numBodies])
+numBodies += 1
+
+
+stop = false
+
+function waitFrame()
+	while not stop do
+		local input = game:GetService("UserInputService").InputBegan:Wait()
+		if input.KeyCode == Enum.KeyCode.Z then
+			stop = true
+		elseif input.KeyCode == Enum.KeyCode.X then
+			return
+		end
+	end
+	stop = false
+end
+
+function _G.waitStep()
+	while not stop do
+		local input = game:GetService("UserInputService").InputBegan:Wait()
+		if input.KeyCode == Enum.KeyCode.Z then
+			stop = true
+		elseif input.KeyCode == Enum.KeyCode.X then
+			return
+		end
+	end
+end
+
+while true do
 	world:Step(timeStep)
 	for i,v in pairs(bodies) do
 		local pos = UDim2.new(0, v.position.x - v.width.x / 2, 0, v.position.y - v.width.y / 2)
 		local scale = UDim2.new(0, v.width.x, 0, v.width.y)
 		rects[i].Position = pos;
 		rects[i].Size = scale;
-		rects[i].Rotation = v.rotation;
+		rects[i].Rotation = math.deg(v.rotation);
 	end
-	game:GetService("UserInputService").InputBegan:Wait()
+	task.wait()
+	print("-------------------------------------")
+	waitFrame()
 end

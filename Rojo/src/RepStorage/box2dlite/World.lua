@@ -85,6 +85,8 @@ function World:Step(dt)
 	-- Determine overlapping bodies and update contact points.
 	self:BroadPhase();
 
+	-- UNTIL here seems legit....
+
 	-- Integrate forces.
 	for i,_ in pairs(self.bodies) do
 		local b = self.bodies[i]; -- Body
@@ -105,6 +107,7 @@ function World:Step(dt)
 	for _,v in pairs(self.joints) do
 		v:PreStep(inv_dt);	
   end
+
 	-- Perform iterations
 	for i = 1,self.iterations do
 		for first,second in pairs(self.arbiters) do
