@@ -115,6 +115,7 @@ function Arbiter:Update(newContacts, numNewContacts)
 				c.Pt = 0.0;
 				c.Pnb = 0.0;
       end
+			mergedContacts[i] = c
 		else
 			mergedContacts[i] = newContacts[i];
     end
@@ -165,7 +166,7 @@ function Arbiter:PreStep(inv_dt)
 			self.body1.velocity:sub(maths.MulFV(self.body1.invMass, P));
 			self.body1.angularVelocity -= self.body1.invI * maths.CrossVV(r1, P);
 
-			self.body2.velocity:sub(maths.MulFV(self.body2.invMass, P));
+			self.body2.velocity:add(maths.MulFV(self.body2.invMass, P));
 			self.body2.angularVelocity += self.body2.invI * maths.CrossVV(r2, P);
     end
 	end
@@ -232,7 +233,7 @@ function Arbiter:ApplyImpulse()
 		b1.velocity:sub(maths.MulFV(b1.invMass, Pt));
 		b1.angularVelocity -= b1.invI * maths.CrossVV(c.r1, Pt);
 
-		b2.velocity:sub(maths.MulFV(b2.invMass, Pt));
+		b2.velocity:add(maths.MulFV(b2.invMass, Pt));	
 		b2.angularVelocity += b2.invI * maths.CrossVV(c.r2, Pt);
 	end
 end
