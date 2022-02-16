@@ -170,11 +170,11 @@ function fill(style, name, default)
 end
 
 function translateUnitToPx(value)
-	return value/50 -- this is incorrect, need to account for scale/zoom
+	return value*50
 end
 
 function translatePxToUnit(value)
-	return value*50
+	return value/50
 end
 
 -- Module functions
@@ -348,7 +348,14 @@ function module.renderCamera()
 
 		v.Position = UDim2.new(0, translateUnitToPx(-px), 0, translateUnitToPx(-py)) -- Set position
 		v.Rotation = -camera.rotation -- Set rotation
-		v.Size = UDim2.new(0, translateUnitToPx(v:GetAttribute("ScaleX")) * 1 / camera.scaleX, 0, translateUnitToPx(v:GetAttribute("ScaleY")) * 1 / camera.scaleY) -- Set size
+		v.Size = UDim2.new(0, translateUnitToPx(v:GetAttribute("ScaleX")) * (1 / camera.scaleX), 0, translateUnitToPx(v:GetAttribute("ScaleY")) * (1 / camera.scaleY)) -- Set size
+
+		-- Debugging
+
+		print(translateUnitToPx(v:GetAttribute("ScaleX")))
+		print(camera.scaleX)
+		print(camera.scaleY)
+		print(camera.rotation)
 	end
 end
 

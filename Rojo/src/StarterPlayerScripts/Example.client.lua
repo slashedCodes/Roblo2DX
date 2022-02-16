@@ -6,7 +6,7 @@ local worl = _G.world
 local bod = _G.body
 
 
---[[ Normal test
+
 
 local rectangleStyle = {
 	bgColor = Color3.new(0.168627, 0.168627, 0.168627), -- read comment below
@@ -15,18 +15,18 @@ local rectangleStyle = {
 	borderWidth = 2,
 }
 
-local textStyle = {
-    bgTransparency = 1,
-    text = "Hello from Roblo2DX!"
-}
+local rec1 = module.drawRectangle(6, 4, 5, 9, "Rectangle1", mainGui, rectangleStyle)
+local rec2 = module.drawRectangle(4, 3, 8, 3, "Rectangle2", mainGui, rectangleStyle)
 
-local rec1 = module.drawRectangle(200, 200, 500, 300, "ExampleRectangle", mainGui, rectangleStyle)
-local rec2 = module.drawText(200, 150, 400, 30, "ExampleText", mainGui, textStyle)
+-- Mess with camera
 
---module.rotateObject(rec2, 90)
---print(module.areObjectsIntersecting(rec1,rec2)) 
+task.wait(5)
 
-]]
+module.setCameraRotation(45)
+
+task.wait(2)
+
+module.setCameraZoom(2, 2)
 
 --[[ Physics testing  
 
@@ -133,3 +133,4 @@ while true do
 end
 
 --]]
+
