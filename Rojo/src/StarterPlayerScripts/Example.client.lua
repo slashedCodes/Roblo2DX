@@ -5,8 +5,7 @@ local maths = _G.maths
 local worl = _G.world
 local bod = _G.body
 
-
-
+local backgroundStyle = {color = Color3.new(0.094117, 0.094117, 0.094117)}
 
 local rectangleStyle = {
 	bgColor = Color3.new(0.168627, 0.168627, 0.168627), -- read comment below
@@ -17,6 +16,7 @@ local rectangleStyle = {
 
 local rec1 = module.drawRectangle(6, 4, 5, 9, "Rectangle1", mainGui, rectangleStyle)
 local rec2 = module.drawRectangle(4, 3, 8, 3, "Rectangle2", mainGui, rectangleStyle)
+local background = module.drawBackground(backgroundStyle)
 
 -- Mess with camera
 

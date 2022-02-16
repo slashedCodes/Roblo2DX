@@ -177,24 +177,6 @@ function translatePxToUnit(value)
 	return value/50
 end
 
--- Module functions
-
--- Fill functions
-
-function module.defaultStyle(style)
-	fill(style, "borderColor", Color3.new(1, 1, 1))
-	fill(style, "borderSize", 2)
-	fill(style, "borderTransparency", 0)
-	fill(style, "bgColor", Color3.new(0.1, 0.1, 0.1))
-	fill(style, "bgTransparency", 0)
-	fill(style, "textColor", Color3.new(1, 1, 1))
-	fill(style, "textTransparency", 0)
-	fill(style, "text", "")
-	fill(style, "spriteID", 0)
-	fill(style, "spriteColor", Color3.new(1, 1, 1))
-	fill(style, "spriteTransparency", 0)
-end
-
 function fillObject(object, posX, posY, sizeX, sizeY, name, style)
 	table.insert(objects, object)
 
@@ -216,6 +198,37 @@ function fillObject(object, posX, posY, sizeX, sizeY, name, style)
 	object.BackgroundTransparency = style["bgTransparency"]
 	object.BorderColor3 = style["borderColor"]
 	object.BorderSizePixel = style["borderSize"]
+end
+
+-- Module functions
+
+-- Fill functions
+
+function module.defaultCamera(table)
+	fill(table, "posX", "0")
+	fill(table, "posY", "0")
+	fill(table, "scaleX", "1")
+	fill(table, "scaleY", "1")
+	fill(table, "rotation", "0")
+end
+
+function module.defaultBackground(table)
+	fill(table, "color", Color3.new(0, 0, 0))
+	fill(table, "transparency", 0)
+end
+
+function module.defaultStyle(style)
+	fill(style, "borderColor", Color3.new(1, 1, 1))
+	fill(style, "borderSize", 2)
+	fill(style, "borderTransparency", 0)
+	fill(style, "bgColor", Color3.new(0.1, 0.1, 0.1))
+	fill(style, "bgTransparency", 0)
+	fill(style, "textColor", Color3.new(1, 1, 1))
+	fill(style, "textTransparency", 0)
+	fill(style, "text", "")
+	fill(style, "spriteID", 0)
+	fill(style, "spriteColor", Color3.new(1, 1, 1))
+	fill(style, "spriteTransparency", 0)
 end
 
 -- Draw functions
@@ -374,6 +387,42 @@ end
 function module.setCameraRotation(rotation)
 	camera.rotation = rotation
 	module.renderCamera()
+end
+
+
+function module.setCameraToTable(table)
+	module.fillCamera(table) -- Make sure values that are needed are there
+	_G.cameraBackup = camera
+	camera.posX = table.posX
+	camera.posY = table.posY
+	camera.scaleX = table.scaleX
+	camera.scaleY = table.scaleY
+	camera.rotation = table.rotation
+end
+
+function module.revertCamera()
+	if _G.camera ~= nil then
+		camera = _G.cameraBackup
+	else
+		warn("Camera backup does not exist.")
+	end
+end
+
+-- Background functions
+
+function module.drawBackground(backgroundComponent)
+
+	-- This function does not add to the Objects table so it does not get rotated/sized/moved.
+
+	module.defaultBackground(backgroundComponent)
+
+	local background = Instance.new("Frame", mainGui)
+	background.Name = "BackgroundFrame"
+	background.Color = backgroundComponent.color
+	background.BackgroundTransparency = backgroundComponent.transparency
+	background.BorderSizePixel = 0 -- Remove border
+	background.ZIndex = -1 -- Make sure the background is at the bottom of everything
+	background.Size = UDim2.new(1, 0, 1, 0) -- Make the frame the size of the screen
 end
 
 return module
