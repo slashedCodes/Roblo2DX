@@ -5,6 +5,9 @@ local maths = _G.maths
 local worl = _G.world
 local bod = _G.body
 
+
+--[[ Normal test
+
 local rectangleStyle = {
 	bgColor = Color3.new(0.168627, 0.168627, 0.168627), -- read comment below
 	bgTransparency = 0, -- this is ignored in the sprite function
@@ -18,12 +21,14 @@ local textStyle = {
 }
 
 local rec1 = module.drawRectangle(200, 200, 500, 300, "ExampleRectangle", mainGui, rectangleStyle)
---local rec2 = module.drawText(200, 150, 400, 30, "ExampleText", mainGui, textStyle)
+local rec2 = module.drawText(200, 150, 400, 30, "ExampleText", mainGui, textStyle)
+
 --module.rotateObject(rec2, 90)
--- try this to see debug infos
 --print(module.areObjectsIntersecting(rec1,rec2)) 
 
+]]
 
+--[[ Physics testing  
 
 local rects = {}
 
@@ -126,3 +131,5 @@ while true do
 	print("-------------------------------------")
 	waitFrame()
 end
+
+--]]

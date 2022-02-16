@@ -14,11 +14,16 @@ local localPlayer = game.Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
 local mainGui = playerGui:WaitForChild("Roblo2DX")
 local InsertService = game:GetService("InsertService")
-local compFolder = script.Parent.Components
 
-local components = {
-	"TestComponent"
+local camera = {
+	posX = 0,
+	posY = 0,
+	scaleX = 1, 
+	scaleY = 1,
+	rotation = 0
 }
+
+local objects = {}
 
 -- Modules And Functions
 
@@ -174,6 +179,8 @@ end
 
 -- Module functions
 
+-- Fill functions
+
 function module.defaultStyle(style)
 	fill(style, "borderColor", Color3.new(1, 1, 1))
 	fill(style, "borderSize", 2)
@@ -189,8 +196,9 @@ function module.defaultStyle(style)
 end
 
 function fillObject(object, posX, posY, sizeX, sizeY, name, style)
-	-- ensures that provided styles are valid
-	module.defaultStyle(style)
+	table.insert(objects, object)
+
+	module.defaultStyle(style)	-- ensures that provided styles are valid
 
 	object:SetAttribute("PosX", posX) -- 1 in unit space is 50px in real screen space.
 	object:SetAttribute("PosY", posY)
@@ -208,9 +216,9 @@ function fillObject(object, posX, posY, sizeX, sizeY, name, style)
 	object.BackgroundTransparency = style["bgTransparency"]
 	object.BorderColor3 = style["borderColor"]
 	object.BorderSizePixel = style["borderSize"]
-
-
 end
+
+-- Draw functions
 
 function module.drawRectangle(posX, posY, sizeX, sizeY, name, parent, style)
 	local newFrame = Instance.new("Frame", parent)
@@ -237,11 +245,15 @@ function module.drawText(posX, posY, sizeX, sizeY, name, parent, style)
 	return newText
 end
 
+-- The one and only rotation function
+
 function module.rotateObject(object, rotation)
 	if object:isA("GuiObject") then
         object.Rotation = rotation
     end
 end
+
+ -- Hitbox functions
 
 function module.CreateParentedHitbox(object, name)
 	if hitboxCheck() then
@@ -279,6 +291,8 @@ function module.CreateUnparentedHitbox(posX, posY, sizeX, sizeY, name)
 	end
 end
 
+-- Move functions
+
 function module.MoveObjectTo(object, X, Y)
     if object:IsA("GuiObject") then
 		object.Position = UDim2.new(0, translateUnitToPx(Instance:GetAttribute("PosX")), 0, translateUnitToPx(Instance:GetAttribute("PosY")))
@@ -302,6 +316,57 @@ function module.MoveObjectToCollisions(object, X, Y)
 
         -- move object away from the objects that collided with it ba ba bldb ala 
     end
+end
+
+-- Camera functions
+
+function module.renderCamera()
+	for i, v in ipairs(objects) do
+		local point = {
+			X = v:GetAttribute("PosX"), 
+			Y = v:GetAttribute("PosY")
+		}
+
+		-- Rotation variables
+		local px = point.X
+		local py = point.Y
+		local s = math.sin(camera.rotation)
+		local c = math.cos(camera.rotation)
+	  
+		-- Rotate point
+		px = px * c - py * s
+		py = px * s + py * c
+		
+		-- Position variables
+		px += camera.posX
+		py += camera.posY
+
+		-- Scale variables
+
+		px *= 1 / camera.scaleX
+		py *= 1 / camera.scaleY
+
+		v.Position = UDim2.new(0, translateUnitToPx(-px), 0, translateUnitToPx(-py)) -- Set position
+		v.Rotation = -camera.rotation -- Set rotation
+		v.Size = UDim2.new(0, translateUnitToPx(v:GetAttribute("ScaleX")) * 1 / camera.scaleX, 0, translateUnitToPx(v:GetAttribute("ScaleY")) * 1 / camera.scaleY) -- Set size
+	end
+end
+
+function module.setCameraZoom(zoomX, zoomY)
+	camera.scaleX = zoomX
+	camera.scaleY = zoomY
+	module.renderCamera()
+end
+
+function module.setCameraPosition(posX, posY)
+	camera.posX = posX
+	camera.posY = posY
+	module.renderCamera()
+end
+
+function module.setCameraRotation(rotation)
+	camera.rotation = rotation
+	module.renderCamera()
 end
 
 return module
