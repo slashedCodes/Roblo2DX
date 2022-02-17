@@ -14,6 +14,7 @@ local localPlayer = game.Players.LocalPlayer
 local playerGui = localPlayer:WaitForChild("PlayerGui")
 local mainGui = playerGui:WaitForChild("Roblo2DX")
 local InsertService = game:GetService("InsertService")
+local playerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 
 local camera = {
 	posX = 0,
@@ -54,62 +55,6 @@ function module.areObjectsIntersecting(object1, object2)
 	-- TODO: possible to make a lookup table of frames to polygons, so we don't have to calculate every time
 	print("running complex collide check")
 	return intersectionCheck(createPolygon(object1), createPolygon(object2))
-end
-
--- Checks if the two polygons are intersecting.
-function intersectionCheck(polyA, polyB)
-	local polys = { polyA, polyB }
-
-	for _,polygon in ipairs(polys) do
-		for i1, _ in pairs(polygon["points"]) do
-			-- get the next point to form a line
-
-			local i2 = i1 % polygon["pointCount"] + 1
-
-			local p1 = polygon["points"][i1]
-			local p2 = polygon["points"][i2]
-			
-			-- the nomral is a vector perpendicular to the line
-			local normal = Vector2.new(p2.Y - p1.Y, p1.X - p2.X)
-
-			-- this is the separating axis theorem
-			-- basically we check if there is any point in the other polygon that is on the correct side of the normal
-			local minA, maxA
-			for p, v in pairs(polyA["points"]) do
-				-- project the point onto the normal
-				-- this simplifies it to 1d instead of 2d
-				-- we record the min and max values of the 1d points
-				local projected = normal.X * v.X + normal.Y * v.Y
-				if minA == nil or projected < minA then
-					minA = projected
-				end
-				if maxA == nil or projected > maxA then
-					maxA = projected
-				end
-			end
-
-			local minB, maxB
-			for p, v in pairs(polyB["points"]) do
-				-- do the same as the first poly, simplify to 1d
-				local projected = normal.X * v.X + normal.Y * v.Y
-				if minB == nil or projected < minB then
-					minB = projected
-				end
-				if maxB == nil or projected > maxB then
-					maxB = projected
-				end
-			end
-
-			-- now we can check easily if the two projections overlap
-			-- in 1d this is easy, just check if the max of one is less than the min of the other
-
-			if maxA < minB or maxB < minA then
-				-- this means that the sections don't overlap, so the polygons don't intersect
-				return false
-			end
-		end
-	end
-	return true
 end
 
 function createPolygon(frame)
@@ -202,19 +147,69 @@ end
 
 -- Module functions
 
--- Fill functions
+function intersectionCheck(polyA, polyB) -- Intersection check function
+	local polys = { polyA, polyB }
 
-function module.defaultCamera(table)
-	fill(table, "posX", "0")
-	fill(table, "posY", "0")
-	fill(table, "scaleX", "1")
-	fill(table, "scaleY", "1")
-	fill(table, "rotation", "0")
+	for _,polygon in ipairs(polys) do
+		for i1, _ in pairs(polygon["points"]) do
+			-- get the next point to form a line
+
+			local i2 = i1 % polygon["pointCount"] + 1
+
+			local p1 = polygon["points"][i1]
+			local p2 = polygon["points"][i2]
+			
+			-- the nomral is a vector perpendicular to the line
+			local normal = Vector2.new(p2.Y - p1.Y, p1.X - p2.X)
+
+			-- this is the separating axis theorem
+			-- basically we check if there is any point in the other polygon that is on the correct side of the normal
+			local minA, maxA
+			for p, v in pairs(polyA["points"]) do
+				-- project the point onto the normal
+				-- this simplifies it to 1d instead of 2d
+				-- we record the min and max values of the 1d points
+				local projected = normal.X * v.X + normal.Y * v.Y
+				if minA == nil or projected < minA then
+					minA = projected
+				end
+				if maxA == nil or projected > maxA then
+					maxA = projected
+				end
+			end
+
+			local minB, maxB
+			for p, v in pairs(polyB["points"]) do
+				-- do the same as the first poly, simplify to 1d
+				local projected = normal.X * v.X + normal.Y * v.Y
+				if minB == nil or projected < minB then
+					minB = projected
+				end
+				if maxB == nil or projected > maxB then
+					maxB = projected
+				end
+			end
+
+			-- now we can check easily if the two projections overlap
+			-- in 1d this is easy, just check if the max of one is less than the min of the other
+
+			if maxA < minB or maxB < minA then
+				-- this means that the sections don't overlap, so the polygons don't intersect
+				return false
+			end
+		end
+	end
+	return true
 end
 
-function module.defaultBackground(table)
-	fill(table, "color", Color3.new(0, 0, 0))
-	fill(table, "transparency", 0)
+-- Fill functions
+
+function module.defaultCamera(cameraTable)
+	fill(cameraTable, "posX", "0")
+	fill(cameraTable, "posY", "0")
+	fill(cameraTable, "scaleX", "1")
+	fill(cameraTable, "scaleY", "1")
+	fill(cameraTable, "rotation", "0")
 end
 
 function module.defaultStyle(style)
@@ -229,6 +224,7 @@ function module.defaultStyle(style)
 	fill(style, "spriteID", 0)
 	fill(style, "spriteColor", Color3.new(1, 1, 1))
 	fill(style, "spriteTransparency", 0)
+	fill(style, "font", Enum.Font.ArialBold)
 end
 
 -- Draw functions
@@ -255,6 +251,7 @@ function module.drawText(posX, posY, sizeX, sizeY, name, parent, style)
 	newText.TextTransparency = style["textTransparency"]
 	-- this is one case where an extra argument wouldn't hurt in my opinion
 	newText.Text = style["text"]
+	newText.Font = style["font"]
 	return newText
 end
 
@@ -266,7 +263,7 @@ function module.rotateObject(object, rotation)
     end
 end
 
- -- Hitbox functions
+-- Hitbox functions
 
 function module.CreateParentedHitbox(object, name)
 	if hitboxCheck() then
@@ -307,13 +304,16 @@ end
 -- Move functions
 
 function module.MoveObjectTo(object, X, Y)
-    if object:IsA("GuiObject") then
-		object.Position = UDim2.new(0, translateUnitToPx(Instance:GetAttribute("PosX")), 0, translateUnitToPx(Instance:GetAttribute("PosY")))
+	object:SetAttribute("PosX", X)
+	object:SetAttribute("PosY", Y)
+
+    if object:IsA("GuiObject") and table.find(objects, object) ~= nil then
+		object.Position = UDim2.new(0, translateUnitToPx(object:GetAttribute("PosX")), 0, translateUnitToPx(object:GetAttribute("PosY")))
     end
 end
 
 function module.MoveObjectToCollisions(object, X, Y)
-    if object:IsA("GuiObject") then
+    if object:IsA("GuiObject") and table.find(objects, object) ~= nil then
         object.Postion = UDim2.new(X, 0, Y, 0)
 
         local collisionArray = checkCollisions(object)
@@ -328,6 +328,16 @@ function module.MoveObjectToCollisions(object, X, Y)
         end
 
         -- move object away from the objects that collided with it ba ba bldb ala 
+   
+	end
+end
+
+function module.Move(object, X, Y)
+	object:SetAttribute("PosX", object:GetAttribute("PosX") + X)
+	object:SetAttribute("PosY", object:GetAttribute("PosY") + Y)
+
+    if object:IsA("GuiObject") and table.find(objects, object) ~= nil then
+		object.Position = UDim2.new(0, translateUnitToPx(object:GetAttribute("PosX")), 0, translateUnitToPx(object:GetAttribute("PosY")))
     end
 end
 
@@ -390,14 +400,18 @@ function module.setCameraRotation(rotation)
 end
 
 
-function module.setCameraToTable(table)
-	module.fillCamera(table) -- Make sure values that are needed are there
+function module.setCameraFromTable(tab)
+	module.fillCamera(tab) -- Make sure values that are needed are there
 	_G.cameraBackup = camera
-	camera.posX = table.posX
-	camera.posY = table.posY
-	camera.scaleX = table.scaleX
-	camera.scaleY = table.scaleY
-	camera.rotation = table.rotation
+	camera.posX = tab.posX
+	camera.posY = tab.posY
+	camera.scaleX = tab.scaleX
+	camera.scaleY = tab.scaleY
+	camera.rotation = tab.rotation
+end
+
+function module.getCamera()
+	return camera
 end
 
 function module.revertCamera()
@@ -414,15 +428,26 @@ function module.drawBackground(backgroundComponent)
 
 	-- This function does not add to the Objects table so it does not get rotated/sized/moved.
 
-	module.defaultBackground(backgroundComponent)
+	module.defaultStyle(backgroundComponent)
 
 	local background = Instance.new("Frame", mainGui)
 	background.Name = "BackgroundFrame"
-	background.Color = backgroundComponent.color
-	background.BackgroundTransparency = backgroundComponent.transparency
+	background.BackgroundColor3 = backgroundComponent.bgColor
+	background.BackgroundTransparency = backgroundComponent.bgTransparency
 	background.BorderSizePixel = 0 -- Remove border
 	background.ZIndex = -1 -- Make sure the background is at the bottom of everything
 	background.Size = UDim2.new(1, 0, 1, 0) -- Make the frame the size of the screen
+
+	--Topbar
+
+	local screenGui = Instance.new("ScreenGui", playerGui)
+	local frame = Instance.new("Frame", screenGui)
+	playerGui:SetTopbarTransparency(1)
+	screenGui.Name = "TopbarBackground"
+	screenGui.IgnoreGuiInset = true
+	frame.Size = UDim2.new(1, 0, 0, 36)
+	frame.BackgroundColor3 = backgroundComponent.bgColor
+	frame.BorderSizePixel = 0
 end
 
 return module
