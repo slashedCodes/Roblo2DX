@@ -215,7 +215,7 @@ end
 function module.defaultStyle(style)
 	fill(style, "borderColor", Color3.new(1, 1, 1))
 	fill(style, "borderSize", 2)
-	fill(style, "borderTransparency", 0)
+	fill(style, "borderTransparency", 1)
 	fill(style, "bgColor", Color3.new(0.1, 0.1, 0.1))
 	fill(style, "bgTransparency", 0)
 	fill(style, "textColor", Color3.new(1, 1, 1))
@@ -235,15 +235,6 @@ function module.drawRectangle(posX, posY, sizeX, sizeY, name, parent, style)
 	return newFrame
 end
 
-function module.drawSprite(posX, posY, sizeX, sizeY, name, parent, style)
-	local newImg = Instance.new("ImageLabel", mainGui)
-	fillObject(newImg, posX, posY, sizeX, sizeY, name, style)
-	newImg.ImageColor3 = style["spriteColor"]
-	newImg.ImageTransparency = style["spriteTransparency"]
-	newImg.Image = "rbxthumb://type=Asset&id=".. style["spriteID"].. "&w=420&h=420"
-	return newImg
-end
-
 function module.drawText(posX, posY, sizeX, sizeY, name, parent, style)
 	local newText = Instance.new("TextLabel", parent)
 	fillObject(newText, posX, posY, sizeX, sizeY, name, style)
@@ -253,6 +244,24 @@ function module.drawText(posX, posY, sizeX, sizeY, name, parent, style)
 	newText.Text = style["text"]
 	newText.Font = style["font"]
 	return newText
+end
+
+-- Sprite functions
+
+
+function module.drawSprite(posX, posY, sizeX, sizeY, name, parent, style)
+	local newImg = Instance.new("ImageLabel", mainGui)
+	fillObject(newImg, posX, posY, sizeX, sizeY, name, style)
+	newImg.ImageColor3 = style["spriteColor"]
+	newImg.ImageTransparency = style["spriteTransparency"]
+	newImg.Image = "rbxthumb://type=Asset&id=".. style["spriteID"].. "&w=420&h=420"
+	return newImg
+end
+
+function module.changeSpriteId(object, id)
+	if object:IsA("GuiObject") and objects[object] ~= nil then
+		object.Image = "rbxthumb://type=Asset&id=".. id.. "&w=420&h=420"
+	end
 end
 
 -- The one and only rotation function
@@ -440,14 +449,41 @@ function module.drawBackground(backgroundComponent)
 
 	--Topbar
 
-	local screenGui = Instance.new("ScreenGui", playerGui)
-	local frame = Instance.new("Frame", screenGui)
-	playerGui:SetTopbarTransparency(1)
-	screenGui.Name = "TopbarBackground"
-	screenGui.IgnoreGuiInset = true
-	frame.Size = UDim2.new(1, 0, 0, 36)
-	frame.BackgroundColor3 = backgroundComponent.bgColor
-	frame.BorderSizePixel = 0
+	if playerGui:WaitForChild("OtherRoblo2DX") ~= nil then
+		local frame = Instance.new("Frame", screenGui)
+		playerGui:SetTopbarTransparency(1)
+		frame.Size = UDim2.new(1, 0, 0, 36)
+		frame.BackgroundColor3 = backgroundComponent.bgColor
+		frame.BorderSizePixel = 0
+	else
+		local screenGui = Instance.new("ScreenGui", playerGui)
+		local frame = Instance.new("Frame", screenGui)
+		playerGui:SetTopbarTransparency(1)
+		screenGui.Name = "OtherRoblo2DX"
+		screenGui.IgnoreGuiInset = true
+		frame.Size = UDim2.new(1, 0, 0, 36)
+		frame.BackgroundColor3 = backgroundComponent.bgColor
+		frame.BorderSizePixel = 0
+	end
+end
+
+-- Screen functions
+
+function module.getWindowSize()
+	if playerGui:WaitForChild("OtherRoblo2DX") ~= nil then
+		local screenFrame = Instance.new("Frame", playerGui.OtherRoblo2DX)
+		screenFrame.Size = UDim2.new(1, 0, 1, 0)
+		screenFrame.BackgroundTransparency = 1
+		return screenFrame.AbsoluteSize
+	else
+		local otherRoblo2DX = Instance.new("ScreenGui", playerGui)
+		otherRoblo2DX.Name = "OtherRoblo2DX"
+		otherRoblo2DX.IgnoreGuiInset = true
+		local screenFrame = Instance.new("Frame", playerGui.OtherRoblo2DX)
+		screenFrame.Size = UDim2.new(1, 0, 1, 0)
+		screenFrame.BackgroundTransparency = 1
+		return screenFrame.AbsoluteSize
+	end
 end
 
 return module
