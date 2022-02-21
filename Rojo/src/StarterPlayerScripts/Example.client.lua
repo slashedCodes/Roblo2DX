@@ -1,4 +1,4 @@
-local module = require(game.ReplicatedStorage.Roblo2DX.Main)
+local module = require(game.ReplicatedStorage.Roblo2DX.Main) 
 local mainGui = game.Players.LocalPlayer.PlayerGui:WaitForChild("Roblo2DX")
 
 local maths = _G.maths
@@ -14,19 +14,23 @@ local rectangleStyle = {
 	borderWidth = 2,
 }
 
+--[[
 local rec1 = module.drawRectangle(6, 4, 5, 9, "Rectangle1", mainGui, rectangleStyle)
 local rec2 = module.drawRectangle(4, 3, 8, 3, "Rectangle2", mainGui, rectangleStyle)
 local background = module.drawBackground(backgroundStyle)
 
+--module.drawSprite(0,0,0,0,"A",a,)
 -- Mess with camera
 
-task.wait(5)
+task. wait(5)
 
 module.setCameraRotation(45)
 
 task.wait(2)
 
 module.setCameraZoom(2, 2)
+
+]]
 
 --[[ Physics testing  
 
@@ -134,3 +138,4 @@ end
 
 --]]
 
+--Precompiled script
